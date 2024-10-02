@@ -51,9 +51,11 @@ library MathMasters {
         assembly {
             // Equivalent to `require(y == 0 || x <= type(uint256).max / y)`.
             if mul(y, gt(x, div(not(0), y))) {
+                // @audit - low: This will revert with changing free location pointer
                 mstore(0x40, 0xbac65e5b) // `MathMasters__MulWadFailed()`.
                 revert(0x1c, 0x04)
             }
+            // @audit - high, this line is wrong and not needed
             if iszero(sub(div(add(z, x), y), 1)) { x := add(x, 1) }
             z := add(iszero(iszero(mod(mul(x, y), WAD))), div(mul(x, y), WAD))
         }
@@ -74,7 +76,7 @@ library MathMasters {
             let r := shl(7, lt(87112285931760246646623899502532662132735, x))
             r := or(r, shl(6, lt(4722366482869645213695, shr(r, x))))
             r := or(r, shl(5, lt(1099511627775, shr(r, x))))
-            // Correct: 16777215 0xffffff
+            // @audit-high wrong:16777002 0xffff2a Correct: 16777215 0xffffff
             r := or(r, shl(4, lt(16777002, shr(r, x))))
             z := shl(shr(1, r), z)
 
